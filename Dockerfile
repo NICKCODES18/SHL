@@ -13,7 +13,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY api ./api
 COPY scripts/prebuild_tfidf.py ./scripts/prebuild_tfidf.py
+COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
 COPY data/catalog.json ./data/catalog.json
+
+RUN chmod +x /docker-entrypoint.sh
 
 # Build search indices at image build time (bundled in image)
 RUN python scripts/prebuild_tfidf.py
@@ -25,7 +28,5 @@ ENV VERCEL=1
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Render sets PORT dynamically — entrypoint reads $PORT
+ENTRYPOINT ["/docker-entrypoint.sh"]
