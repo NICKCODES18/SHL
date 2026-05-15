@@ -1,0 +1,10 @@
+.venv
+__pycache__
+data/chroma_db
+.env
+scripts/explore_*.py
+scripts/parse_*.py
+scripts/scrape_all_products.py
+scripts/fetch_rss.py
+*.pyc
+.pytest_cache

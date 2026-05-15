@@ -1,0 +1,12 @@
+[
+  {
+    "id": "java_mid",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hiring a mid-level Java developer with stakeholder communication. Need technical Java and cognitive reasoning."
+      }
+    ],
+    "relevant": []
+  }
+]

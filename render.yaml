@@ -1,0 +1,19 @@
+# Render — recommended for SHL evaluator (always-on, 30s+ requests, 2min health cold start)
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: shl-assessment-recommender
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: DEFAULT_LLM_MODEL
+        value: mistralai/mistral-small-3.1-24b-instruct
+      - key: USE_LIGHT_RETRIEVAL
+        value: "true"
+      - key: VERCEL
+        value: "1"
+      - key: PYTHONPATH
+        value: /app

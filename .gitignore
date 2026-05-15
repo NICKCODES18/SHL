@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+data/chroma_db/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
