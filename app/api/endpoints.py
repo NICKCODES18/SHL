@@ -11,6 +11,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from app.agents.orchestrator import OrchestratorAgent
 from app.core.config import settings
@@ -19,6 +20,9 @@ from app.models.schemas import ChatRequest, ChatResponse, HealthResponse
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+INDEX_HTML = STATIC_DIR / "index.html"
+
 
 @lru_cache
 def get_orchestrator() -> OrchestratorAgent:
@@ -26,7 +30,6 @@ def get_orchestrator() -> OrchestratorAgent:
 
 
 def _catalog_count() -> int:
-    """Read catalog size without loading embeddings (safe for / and /health)."""
     path = Path(settings.CATALOG_PATH)
     if not path.exists():
         return 0
@@ -37,9 +40,21 @@ def _catalog_count() -> int:
         return 0
 
 
-@router.get("/")
-async def root() -> dict:
-    """Public index — does not load ML models (stays fast for uptime checks)."""
+@router.get("/", response_class=HTMLResponse)
+async def frontend() -> FileResponse:
+    """Interactive UI for testing health + chat."""
+    return FileResponse(INDEX_HTML, media_type="text/html")
+
+
+@router.get("/chat")
+async def chat_browser_redirect() -> RedirectResponse:
+    """Browsers GET /chat — send users to the frontend."""
+    return RedirectResponse(url="/", status_code=302)
+
+
+@router.get("/api/info")
+async def api_info() -> dict:
+    """JSON service metadata (used by frontend status panel)."""
     return {
         "service": "SHL Assessment Recommender",
         "status": "running",
@@ -55,10 +70,7 @@ async def root() -> dict:
 
 @router.get("/health", response_model=HealthResponse)
 async def health_check() -> HealthResponse:
-    """
-    Readiness probe — must return {\"status\": \"ok\"} with HTTP 200.
-    Evaluators may wait up to 2 minutes on cold start; this responds immediately.
-    """
+    """Readiness probe — must return {\"status\": \"ok\"} with HTTP 200."""
     return HealthResponse(status="ok")
 
 
@@ -67,10 +79,7 @@ async def chat_endpoint(
     request: ChatRequest,
     orchestrator: OrchestratorAgent = Depends(get_orchestrator),
 ) -> ChatResponse:
-    """
-    Stateless chat endpoint.
-    Full conversation history must be sent on every request.
-    """
+    """Stateless chat endpoint."""
     start = time.perf_counter()
     try:
         response = orchestrator.process_chat(request)

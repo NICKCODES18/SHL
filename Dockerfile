@@ -11,6 +11,7 @@ COPY requirements-vercel.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+COPY app/static ./app/static
 COPY api ./api
 COPY scripts/prebuild_tfidf.py ./scripts/prebuild_tfidf.py
 COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
